@@ -17,7 +17,7 @@ for filename in additional_files:
     if os.path.exists(filename):
         os.remove(filename)
         print(f"Cleaned existing file: {filename}")
-olhc_data = {instrument: [] for instrument in ["Nifty", "Banknifty", "Finnifty"]}
+olhc_stock_data = {instrument: [] for instrument in ["Nifty", "Banknifty", "Finnifty"]}
 moving_averages_data = {}  # Use a separate dictionary for moving averages data
 
 def on_message(ws, message):
@@ -28,7 +28,7 @@ def process_data(data):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     for instrument, ltp in data.items():
-        olhc_data[instrument].append({
+        olhc_stock_data[instrument].append({
             "Timestamp": timestamp,
             "Open": ltp,
             "Low": ltp,
@@ -37,7 +37,7 @@ def process_data(data):
         })
 
         # Save CSV file after every new entry
-        df = pd.DataFrame(olhc_data[instrument][-1:])  # Select only the last entry
+        df = pd.DataFrame(olhc_stock_data[instrument][-1:])  # Select only the last entry
         with open(CSV_FILENAME, 'a+', newline='') as f:
             # Write header only if the file is newly created
             if f.tell() == 0:
@@ -47,8 +47,8 @@ def process_data(data):
 
             f.flush()
 
-        if len(olhc_data[instrument]) >= WINDOW_SIZE:
-            close_prices = [entry["Close"] for entry in olhc_data[instrument][-WINDOW_SIZE:]]
+        if len(olhc_stock_data[instrument]) >= WINDOW_SIZE:
+            close_prices = [entry["Close"] for entry in olhc_stock_data[instrument][-WINDOW_SIZE:]]
             ma = mean(close_prices)
 
             # Add the new moving average value to the corresponding instrument's dictionary
